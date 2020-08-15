@@ -2,6 +2,7 @@
 ## 大数据项目-电商网站日志分析系统
 ### 1.数据流图
 ![项目数据流图](https://github.com/liuwencong666/Website_Log_Analysis/blob/master/pics/项目数据流图.jpg) 
+注意，本仓库中包含代码只覆盖图中红框标记部分。<br>
 ### 2.数据流图解析
 #### 2.1 整体流程<br>
 基于js埋点的方式访问Nginx并保存日志，通过flume将日志文件动态转移到HDFS中并按照时间对目录进行分级，
