@@ -13,12 +13,11 @@
 
 #### 2.2 JS SDK
 该部分是为了收集用户访问的行为并在Server端获取到相应的日志。本项目通过在js代码中注册不同的事件函数并通过jsp页面进行调用来模拟日志采集这一功能。
-当用户访问页面时，会自动加载埋点的js并执行业务逻辑采集信息，采集页面完成之后，访问<br>
-    http://node0001/log.gif/<br>
-把参数拼接到args后得到：<br>
-    http://node0001/log.gif/?requestdata<br>
-
-拿到参数后向Nginx发送Http请求，Nginx在收到请求的同时记录日志到本地。<br>
+当用户访问页面时，会自动调用js函数执行相应逻辑，将采集到的信息拼接为uri的参数，例如: <br>
+    http://node0001/log.gif/request_data <br>
+其中request_data中包含以下基础字段(可自行扩充):<br>
+![数据表](https://github.com/liuwencong666/Website_Log_Analysis/blob/master/pics/数据表.jpg) 
+拿到参数后向Nginx发送GET请求，Nginx在收到请求的同时记录日志到本地。<br>
 Nginx的http模块配置如下(nginx/conf/nginx.conf)：
 ```
 http {
@@ -77,6 +76,6 @@ a1.sources.r1.channels = c1
 a1.sinks.k1.channel = c1
 ```
 #### 2.4 ETL-MR
-
+将HDFS中的数据
 
 
