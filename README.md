@@ -1,5 +1,5 @@
 # Website_Log_Analysis
-## 大数据项目-电商网站日志分析系统
+## 大数据项目-网站日志分析系统
 ### 1.数据流图
 ![项目数据流图](https://github.com/liuwencong666/Website_Log_Analysis/blob/master/pics/项目数据流图.jpg) 
 注意，本仓库中包含代码只覆盖图中红框标记部分。<br>
