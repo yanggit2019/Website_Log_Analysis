@@ -120,8 +120,9 @@ MySQL表设计如下:<br>
 ```
 在本项目中,基于MR的方式生成了1-10表的结果,将Hive作为HBase的一个客户端,使用HQL语句从HBase中的表计算出相应结果并保存结果到Hive表中,之后使用Sqoop将Hive表中数据转移到MySQL表中,基于该种方式生成了11-stats_view_depth的结果。<br>
 HBase-MR相关代码在com.wla.transformer.mr包下。<br>
-HBase-Hive相关自定义UDF类在com.wla.transformer.hive包下,MySQL建表sql文件与HQL文件在com.wla.transformer.hive.query包下。各表字段含义均注释在相关SQL文件中。<br>
-MySQL得到的结果以stats_device_browser表为例,该表一行中包含以下字段:<br>
+HBase-Hive相关自定义UDF类在com.wla.transformer.hive包下,MySQL建表sql文件与HQL&Sqoop执行步骤文件在com.wla.transformer.hive.query包下。各表字段含义均注释在相关SQL文件中。<br>
+### 3.MySQL端结果展示
+HBase-MR得到的结果以stats_device_browser表为例,该表一行中包含以下字段:<br>
 ```
 date_dimension_id 1
 platform_ dimension_id 1
@@ -131,7 +132,7 @@ new_install_users 10000
 total_users 28620
 created 2020-08-07
 ```
-Hive得到的结果以stats_view_depth表为例，该表一行中包含以下字段:<br>
+HBase-Hive-Sqoop得到的结果以stats_view_depth表为例，该表一行中包含以下字段:<br>
 ```
 platform_dimension_id 2
 date_dimension_id 1
