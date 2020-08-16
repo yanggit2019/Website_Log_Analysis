@@ -30,22 +30,7 @@
 		<name>collector_browser_active_member</name>
 		<value>com.sxt.transformer.mr.am.ActiveMemberCollector</value>
 	</property>
-
-	<property>
-		<name>collector_new_member</name>
-		<value>com.sxt.transformer.mr.nm.NewMemberCollector</value>
-	</property>	
-
-	<property>
-		<name>collector_browser_new_member</name>
-		<value>com.sxt.transformer.mr.nm.NewMemberCollector</value>
-	</property>	
-
-	<property>
-		<name>collector_insert_member_info</name>
-		<value>com.sxt.transformer.mr.nm.NewMemberCollector</value>
-	</property>
-
+	
 	<property>
 		<name>collector_sessions</name>
 		<value>com.sxt.transformer.mr.sessions.SessionsCollector</value>
@@ -79,15 +64,5 @@
 	<property>
 		<name>collector_location</name>
 		<value>com.sxt.transformer.mr.location.LocationCollector</value>
-	</property>	
-
-	<property>
-		<name>collector_inbound</name>
-		<value>com.sxt.transformer.mr.inbound.InboundCollector</value>
-	</property>	
-
-	<property>
-		<name>collector_inbound_bounce</name>
-		<value>com.sxt.transformer.mr.inbound.bounce.InboundBounceCollector</value>
 	</property>	
 </configuration>

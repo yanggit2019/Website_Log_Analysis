@@ -108,11 +108,6 @@ CREATE TABLE `stats_device_browser` (
   `active_users` int(11) DEFAULT '0' COMMENT '活跃用户数',
   `new_install_users` int(11) DEFAULT '0' COMMENT '新增用户数',
   `total_install_users` int(11) DEFAULT '0' COMMENT '总用户数',
-  `sessions` int(11) DEFAULT '0' COMMENT '会话个数',
-  `sessions_length` int(11) DEFAULT '0' COMMENT '会话长度',
-  `total_members` int(11) unsigned DEFAULT '0' COMMENT '总会员数',
-  `active_members` int(11) unsigned DEFAULT '0' COMMENT '活跃会员数',
-  `new_members` int(11) unsigned DEFAULT '0' COMMENT '新增会员数',
   `pv` int(11) DEFAULT '0' COMMENT 'pv数',
   `created` date DEFAULT NULL,
   PRIMARY KEY (`platform_dimension_id`,`date_dimension_id`,`browser_dimension_id`)
@@ -128,8 +123,6 @@ CREATE TABLE `stats_device_location` (
   `platform_dimension_id` int(11) NOT NULL,
   `location_dimension_id` int(11) NOT NULL DEFAULT '0',
   `active_users` int(11) DEFAULT '0' COMMENT '活跃用户数',
-  `sessions` int(11) DEFAULT '0' COMMENT '会话个数',
-  `bounce_sessions` int(11) DEFAULT '0' COMMENT '跳出会话个数',
   `created` date DEFAULT NULL,
   PRIMARY KEY (`platform_dimension_id`,`date_dimension_id`,`location_dimension_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT COMMENT='统计地域相关分析数据的统计表';
