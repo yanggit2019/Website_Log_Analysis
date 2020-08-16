@@ -6,23 +6,24 @@ with serdeproperties('hbase.columns.mapping'=':key,log:pl,log:en,log:s_time,log:
 tblproperties('hbase.table.name'='eventlog');
 
 -- 2. 创建mysql在hive中的对应表，hive中的表，执行HQL之后分析的结果保存该表，然后通过sqoop工具导出到mysql
-CREATE TABLE `stats_view_depth` (`platform_dimension_id` bigint ,`data_dimension_id` bigint , `kpi_dimension_id` bigint , `pv1` bigint , `pv2` bigint , `pv3` bigint , `pv4` bigint , `pv5_10` bigint , `pv10_30` bigint , `pv30_60` bigint , `pv60_plus` bigint , `created` string);
+CREATE TABLE `stats_view_depth` (`platform_dimension_id` bigint ,`date_dimension_id` bigint , `kpi_dimension_id` bigint , `pv1` bigint , `pv2` bigint , `pv3` bigint , `pv4` bigint , `pv5_10` bigint , `pv10_30` bigint , `pv30_60` bigint , `pv60_plus` bigint , `created` string);
 
 -- 3. hive创建临时表:把hql分析之后的中间结果存放到当前的临时表。
 CREATE TABLE `stats_view_depth_tmp`(`pl` string, `date` string, `col` string, `ct` bigint) row format delimited fields terminated by ',';
 
--- 4. 编写UDF(platformdimension & datedimension)<需要注意，要删除DimensionConvertClient类中所有FileSystem关闭的操作>
+-- 4. 编写UDF(platformdimension & datedimension & kpidimension)
 -- 5. 上传transformer-0.0.1.jar到hdfs的/sxt/transformer文件夹中
--- 6. 创建hive的function
-#create function platform_convert as 'com.sxt.transformer.hive.PlatformDimensionUDF' using jar 'hdfs://sxt/sxt/transformer/transformer-0.0.1.jar';  
+-- 6. 创建hive的自定义function
+create function platform_convert as 'com.sxt.transformer.hive.PlatformDimensionUDF' using jar 'hdfs://sxt/sxt/transformer/transformer-0.0.1.jar';  
 create function date_convert as 'com.sxt.transformer.hive.DateDimensionUDF' using jar 'hdfs://sxt/sxt/transformer/transformer-0.0.1.jar';  
+create function kpi_convert as 'com.sxt.transformer.hive.KpiDimensionUDF' using jar 'hdfs://sxt/sxt/transformer/transformer-0.0.1.jar';  
 
 
--- 7. hql编写(统计用户角度的浏览深度)<注意：时间为外部给定>
+-- 7. hql编写(统计用户角度的浏览深度,注意：时间为外部给定)
 from (
 select pl, from_unixtime(cast(s_time/1000 as bigint),'yyyy-MM-dd') as day, u_ud, (case when count(p_url) = 1 then "pv1" when count(p_url) = 2 then "pv2" when count(p_url) = 3 then "pv3" when count(p_url) = 4 then "pv4" when count(p_url) >= 5 and count(p_url) <10 then "pv5_10" when count(p_url) >= 10 and count(p_url) <30 then "pv10_30" when count(p_url) >=30 and count(p_url) <60 then "pv30_60"  else 'pv60_plus' end) as pv 
 from event_logs 
-where en='e_pv' and p_url is not null and pl is not null and s_time >= unix_timestamp('2016-06-08','yyyy-MM-dd')*1000 and s_time < unix_timestamp('2016-06-09','yyyy-MM-dd')*1000
+where en='e_pv' and p_url is not null and pl is not null and s_time >= unix_timestamp('2020-08-07','yyyy-MM-dd')*1000 and s_time < unix_timestamp('2020-08-08','yyyy-MM-dd')*1000
 group by pl, from_unixtime(cast(s_time/1000 as bigint),'yyyy-MM-dd'), u_ud
 ) as tmp
 insert overwrite table stats_view_depth_tmp select pl,day,pv,count(distinct u_ud) as ct where u_ud is not null group by pl,day,pv;
