@@ -132,7 +132,7 @@ new_install_users 10000
 total_users 28620
 created 2020-08-07
 ```
-HBase-Hive-Sqoop得到的结果以stats_view_depth表为例，该表一行中包含以下字段:<br>
+HBase-Hive-Sqoop得到的结果以stats_view_depth表为例,该表一行中包含以下字段:<br>
 ```
 platform_dimension_id 2
 date_dimension_id 1
