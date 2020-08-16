@@ -16,7 +16,7 @@
 当用户访问页面时，会自动调用js函数执行相应逻辑，将采集到的信息拼接为uri的参数，例如: <br>
     http://node0001/log.gif/request_data <br>
 其中request_data中包含以下基础字段(可扩充):<br>
-![数据表](https://github.com/liuwencong666/Website_Log_Analysis/blob/master/pics/数据表.jpg) 
+![数据表](https://github.com/liuwencong666/Website_Log_Analysis/blob/master/pics/数据表格.jpg) 
 拿到参数后向Nginx发送GET请求，Nginx在收到请求的同时记录日志到本地。<br>
 日志中每一条记录的格式如下:<br>
 客户端IP^A日志生成时间^A主机名^A参数<br>
