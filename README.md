@@ -84,8 +84,8 @@ a1.sources.r1.channels = c1
 a1.sinks.k1.channel = c1
 ```
 #### 2.4 ETL-MR
-ETL相关代码在com.wla.etl包下。本步骤是对HDFS中的日志数据进行解析，包括IP地址到地理位置的解析，浏览器的userAgent信息的解析，request_data的解析。同时设定了一定的规则清洗掉错误的不规则的数据。将字段-服务器时间与字段-uuid进行拼接作为HBase表中的row key，参数字段类型作为列名，最终将清洗好的数据存储到HBase中。<br>
-HBase中的每一条日志是按照ETL完成后的数据格式存储，例如:<br>
+ETL相关代码在com.wla.etl包下。本步骤是对HDFS中的日志数据进行解析，包括IP地址到地理位置的解析，浏览器的userAgent信息的解析，request_data的解析。同时设定了一定的规则清洗掉错误的不规则的数据。将字段-服务器时间与加密后的字段-uuid进行拼接作为HBase表中的row key，参数字段类型作为列名，最终将清洗好的数据存储到HBase中。<br>
+HBase中的每一条日志是按照ETL完成后的数据格式存储，单条数据格式如下:<br>
 ```
 1596902354000_8280549             column=log:browser, timestamp=1597051605191, value=360                                         
 1596902354000_8280549             column=log:browser_v, timestamp=1597051605191, value=2                                         
@@ -101,24 +101,53 @@ HBase中的每一条日志是按照ETL完成后的数据格式存储，例如:<b
 1596902354000_8280549             column=log:u_sd, timestamp=1597051605191, value=12344F83-6357-4A64-8527-F09216974234           
 1596902354000_8280549             column=log:u_ud, timestamp=1597051605191, value=66179360
 ```
+注意,为模拟大批量的日志数据,本项目采用了随机生成符合格式标准的日志的方式直接插入到了HBase的结果表中,同时也可以通过脚本调用JS端请求Nginx来获取大批量日志数据文件。
 #### 2.5 HBase-MR & HBase-Hive-Sqoop
 本步骤是对HBase中存储的清洗好的日志数据进行统计与分析，并将最终的结果存储到多个MySQL表中。<br>
 MySQL表设计如下:<br>
-1.维度表 dimension_browser,记录浏览器名称的id<br>
-2.维度表 imension_date,记录日期的id<br>
-3.维度表 dimension_event,记录事件名称的id<br>
-4.维度表 dimension_kpi,记录维度组合kpi的id<br>
-5.维度表 dimension_location,记录地理位置的id<br>
-6.维度表 dimension_os,记录客户端os名称的id<br>
-7.维度表 dimension_platform,记录平台名称的id<br>
-8.结果表 stats_device_browser,根据平台名称+浏览器名称作为维度组合统计出相应时间区间内的新增用户数,活跃用户数,会话个数,pv数等<br>
-9.结果表 stats_device_location,根据平台名称+地理位置名称作为维度组合统计出相应时间区间内的新增用户数，活跃用户数,会话个数,pv数等<br>
-10.结果表 stats_event,根据事件名称统计出相应时间区间内的新增用户数，活跃用户数，会话个数，各维度记录数等<br>
-11.结果表 stats_view_depth,根据日期+平台名称+事件名称作为维度组合统计出相应时间区间内各访问深度的用户数量<br>
-在本项目中,基于MR的方式生成了1-10表的结果,将Hive作为HBase的一个客户端,使用HQL语句从HBase中的表计算出相应结果并保存结果到Hive表中,之后使用Sqoop将Hive表中数据转移到MySQL表中,基于该种方式生成了11-stats_view_depth的结果。
-MySQL建表SQL文件在com.wla.transformer.hive
-HBase-MR相关代码在com.wla.transformer.mr包下。
-HBase-Hive相关自定义UDF类及HQL语句在com.wla.transformer.hive包下。
+```
+1.维度表 dimension_browser,记录浏览器名称的id
+2.维度表 dimension_date,记录时间维度(年/月/日/小时)的id
+3.维度表 dimension_event,记录事件名称的id
+4.维度表 dimension_kpi,记录维度组合kpi(launch/pageview等)的id
+5.维度表 dimension_location,记录地理位置的id
+6.维度表 dimension_os,记录客户端os名称的id
+7.维度表 dimension_platform,记录平台名称的id
+8.结果表 stats_device_browser,根据时间维度+平台名称+浏览器名称作为维度组合统计出相应时间区间内的新增用户数,活跃用户数,会话个数,pv数等
+9.结果表 stats_device_location,根据时间维度+平台名称+地理位置名称作为维度组合统计出相应时间区间内的新增用户数，活跃用户数,会话个数,pv数等
+10.结果表 stats_event,根据时间维度+事件名称统计出相应时间区间内的新增用户数，活跃用户数，会话个数，各维度记录数等
+11.结果表 stats_view_depth,根据时间维度+平台名称+事件名称作为维度组合统计出相应时间区间内各访问深度的用户数量
+```
+在本项目中,基于MR的方式生成了1-10表的结果,将Hive作为HBase的一个客户端,使用HQL语句从HBase中的表计算出相应结果并保存结果到Hive表中,之后使用Sqoop将Hive表中数据转移到MySQL表中,基于该种方式生成了11-stats_view_depth的结果。<br>
+HBase-MR相关代码在com.wla.transformer.mr包下。<br>
+HBase-Hive相关自定义UDF类在com.wla.transformer.hive包下,MySQL建表sql文件与HQL文件在com.wla.transformer.hive.query包下。<br>
+MySQL得到的结果以stats_device_browser表为例,该表一行中包含以下字段:<br>
+```
+date_dimension_id 1<br>
+platform_ dimension_id 1
+browser_dimension_id 25
+active_users 18620
+new_install_users 10000
+total_users 28620
+created 2020-08-07
+```
+Hive得到的结果以stats_view_depth表为例，该表一行中包含以下字段:<br>
+```
+platform_dimension_id 2
+date_dimension_id 1
+kpi_dimension_id 3
+pv1 15200
+pv2 8001
+pv3 6023
+pv4 5500
+pv5_10 4800
+pv10_30 865
+pv30_60 602
+pv60_plus 403
+created 2020-08-05
+```
+
+
 
 
 
