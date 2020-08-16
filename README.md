@@ -15,9 +15,15 @@
 该部分是为了收集用户访问的行为并在Server端获取到相应的日志。本项目通过在js代码中注册不同的事件函数并通过jsp页面进行调用来模拟日志采集这一功能。
 当用户访问页面时，会自动调用js函数执行相应逻辑，将采集到的信息拼接为uri的参数，例如: <br>
     http://node0001/log.gif/request_data <br>
-其中request_data中包含以下基础字段(可自行扩充):<br>
+其中request_data中包含以下基础字段(可扩充):<br>
 ![数据表](https://github.com/liuwencong666/Website_Log_Analysis/blob/master/pics/数据表.jpg) 
 拿到参数后向Nginx发送GET请求，Nginx在收到请求的同时记录日志到本地。<br>
+日志中每一条记录的格式如下:<br>
+客户端IP^A日志生成时间^A主机名^A参数<br>
+例如:<br>
+```
+192.168.9.1^A1596783000.058^Anode0001^A/log.gif?en=e_pv&p_url=http%3A%2F%2Flocalhost%3A8080%2FBD%2Fdemo.jsp&tt=%E6%B5%8B%E8%AF%95%E9%A1%B5%E9%9D%A24&ver=1&pl=website&sdk=js&u_ud=7A6D4638-51B3-4375-A9FB-48B50670EB83&u_sd=FC45CF40-02BB-4669-B498-E291E8BA8445&c_time=1596784361940&l=zh-CN&b_iev=Mozilla%2F5.0%20(Windows%20NT%2010.0%3B%20WOW64)%20AppleWebKit%2F537.36%20(KHTML%2C%20like%20Gecko)%20Chrome%2F78.0.3904.108%20Safari%2F537.36&b_rst=1920*1080
+```
 Nginx的http模块配置如下(nginx/conf/nginx.conf)：
 ```
 http {
@@ -40,6 +46,7 @@ http {
 	}
 }
 ```
+
 #### 2.3 Flume
 Flume和Nginx均安装在node0001上。Flume的source组件类型设置为Exec Source,sink组件类型设置为HDFS Sink。配置文件如下：
 ```
