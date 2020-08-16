@@ -118,7 +118,7 @@ MySQL表设计如下:<br>
 10.结果表 stats_event,根据时间维度+事件名称统计出相应时间区间内的新增用户数，活跃用户数，会话个数，各维度记录数等
 11.结果表 stats_view_depth,根据时间维度+平台名称+事件名称作为维度组合统计出相应时间区间内各访问深度的用户数量
 ```
-在本项目中,基于MR的方式生成了1-10表的结果,将Hive作为HBase的一个客户端,使用HQL语句从HBase中的表计算出相应结果并保存结果到Hive表中,之后使用Sqoop将Hive表中数据转移到MySQL表中,基于该种方式生成了11-stats_view_depth的结果。<br>
+在本项目中,基于MR的方式生成了1-10表的结果,将Hive作为HBase的一个客户端,使用HQL语句从HBase中的表计算出相应结果并保存结果到Hive表中,之后使用Sqoop将Hive表中数据转移到MySQL表中,基于该种方式生成了stats_view_depth表的结果。<br>
 HBase-MR相关代码在com.wla.transformer.mr包下。<br>
 HBase-Hive相关自定义UDF类在com.wla.transformer.hive包下,MySQL建表sql文件与HQL&Sqoop执行步骤文件在com.wla.transformer.hive.query包下。各表字段含义均注释在相关SQL文件中。<br>
 ### 3.MySQL端结果展示
