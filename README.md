@@ -48,7 +48,8 @@ http {
 ```
 
 #### 2.3 Flume
-Flume和Nginx均安装在node0001上。Flume的source组件类型设置为Exec Source,sink组件类型设置为HDFS Sink。配置文件如下：
+Flume和Nginx均安装在node0001上。Flume的source组件类型设置为Exec Source,sink组件类型设置为HDFS Sink。 将log文件按照年/月/日的格式分级保存到HDFS目录中。
+配置文件如下：
 ```
 #日志数据通过flume传给hdfs设置
 a1.sources = r1
@@ -83,6 +84,41 @@ a1.sources.r1.channels = c1
 a1.sinks.k1.channel = c1
 ```
 #### 2.4 ETL-MR
-将HDFS中的数据
+ETL相关代码在com.wla.etl包下。本步骤是对HDFS中的日志数据进行解析，包括IP地址到地理位置的解析，浏览器的userAgent信息的解析，request_data的解析。同时设定了一定的规则清洗掉错误的不规则的数据。将字段-服务器时间与字段-uuid进行拼接作为HBase表中的row key，参数字段类型作为列名，最终将清洗好的数据存储到HBase中。<br>
+HBase中的每一条日志是按照ETL完成后的数据格式存储，例如:<br>
+```
+1596902354000_8280549             column=log:browser, timestamp=1597051605191, value=360                                         
+1596902354000_8280549             column=log:browser_v, timestamp=1597051605191, value=2                                         
+1596902354000_8280549             column=log:city, timestamp=1597051605191, value=\xE4\xB8\x9C\xE8\x8E\x9E\xE5\xB8\x82           
+1596902354000_8280549             column=log:country, timestamp=1597051605191, value=\xE4\xB8\xAD\xE5\x9B\xBD                     
+1596902354000_8280549             column=log:en, timestamp=1597051605191, value=e_l                                               
+1596902354000_8280549             column=log:os, timestamp=1597051605191, value=ios                                               
+1596902354000_8280549             column=log:os_v, timestamp=1597051605191, value=0                                               
+1596902354000_8280549             column=log:p_url, timestamp=1597051605191, value=http://www.jd.com                             
+1596902354000_8280549             column=log:pl, timestamp=1597051605191, value=website                                           
+1596902354000_8280549             column=log:province, timestamp=1597051605191, value=\xE5\xB9\xBF\xE4\xB8\x9C\xE7\x9C\x81       
+1596902354000_8280549             column=log:s_time, timestamp=1597051605191, value=1596902354000                                 
+1596902354000_8280549             column=log:u_sd, timestamp=1597051605191, value=12344F83-6357-4A64-8527-F09216974234           
+1596902354000_8280549             column=log:u_ud, timestamp=1597051605191, value=66179360
+```
+#### 2.5 HBase-MR & HBase-Hive-Sqoop
+本步骤是对HBase中存储的清洗好的日志数据进行统计与分析，并将最终的结果存储到多个MySQL表中。<br>
+MySQL表设计如下:<br>
+1.维度表 dimension_browser,记录浏览器名称的id<br>
+2.维度表 imension_date,记录日期的id<br>
+3.维度表 dimension_event,记录事件名称的id<br>
+4.维度表 dimension_kpi,记录维度组合kpi的id<br>
+5.维度表 dimension_location,记录地理位置的id<br>
+6.维度表 dimension_os,记录客户端os名称的id<br>
+7.维度表 dimension_platform,记录平台名称的id<br>
+8.结果表 stats_device_browser,根据平台名称+浏览器名称作为维度组合统计出相应时间区间内的新增用户数,活跃用户数,会话个数,pv数等<br>
+9.结果表 stats_device_location,根据平台名称+地理位置名称作为维度组合统计出相应时间区间内的新增用户数，活跃用户数,会话个数,pv数等<br>
+10.结果表 stats_event,根据事件名称统计出相应时间区间内的新增用户数，活跃用户数，会话个数，各维度记录数等<br>
+11.结果表 stats_view_depth,根据日期+平台名称+事件名称作为维度组合统计出相应时间区间内各访问深度的用户数量<br>
+在本项目中,基于MR的方式生成了1-10表的结果,将Hive作为HBase的一个客户端,使用HQL语句从HBase中的表计算出相应结果并保存结果到Hive表中,之后使用Sqoop将Hive表中数据转移到MySQL表中,基于该种方式生成了11-stats_view_depth的结果。
+MySQL建表SQL文件在com.wla.transformer.hive
+HBase-MR相关代码在com.wla.transformer.mr包下。
+HBase-Hive相关自定义UDF类及HQL语句在com.wla.transformer.hive包下。
+
 
 
